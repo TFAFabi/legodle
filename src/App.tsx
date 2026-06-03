@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock } from 'lucide-react';
+import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock, Timer } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LegoSet, GuessFeedback, GameState, PlayerStats } from './types';
 import { LEGO_SETS } from './data';
@@ -342,35 +342,34 @@ export default function App() {
             </p>
           </div>
 
-          {/* Beautiful Lego-style Next LEGODLE Countdown clock */}
-          <div className="bg-[#eceeef] border-4 border-[#e0e3e4] px-6 py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 w-full max-w-md shadow-[0_4px_0_rgba(0,0,0,0.06)] relative overflow-hidden select-none">
+          {/* Red 3D Lego-brick Next LEGODLE Countdown clock */}
+          <div className="bg-[#CE1126] px-6 py-5 md:py-6 rounded-2xl flex items-center justify-between gap-4 w-full max-w-3xl shadow-[0_6px_0_#9a0c1a,0_8px_16px_rgba(0,0,0,0.1)] relative overflow-hidden select-none border-b border-[#a10e1e]">
             {/* Stud background layout effect for lego vibe */}
-            <div className="absolute top-[3px] left-[15%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute top-[3px] left-[50%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute top-[3px] left-[85%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute bottom-[3px] left-[30%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute bottom-[3px] left-[70%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[4px] left-[10%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[4px] left-[30%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[4px] left-[50%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[4px] left-[70%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[4px] left-[90%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute bottom-[4px] left-[20%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute bottom-[4px] left-[40%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute bottom-[4px] left-[60%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
+            <div className="absolute bottom-[4px] left-[80%] w-2.5 h-2.5 rounded-full bg-white/5"></div>
 
-            <div className="flex items-center gap-3 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-[#002B7F] border-b-4 border-[#001c54] flex items-center justify-center text-white shadow-sm">
-                <Clock size={20} className="animate-pulse" />
-              </div>
-              <div className="text-left">
-                <span className="text-[10px] font-black tracking-widest uppercase block text-[#002B7F] mb-0.5">
-                  Daily puzzle release
-                </span>
-                <span className="font-sans font-black text-sm text-[#191c1d] uppercase">
-                  Next LEGODLE Brick
-                </span>
+            <div className="flex flex-col text-left relative z-10">
+              <span className="text-[10px] md:text-sm font-black tracking-wider uppercase text-white/90 leading-none mb-1 md:mb-1.5">
+                NEXT BRICK DROPS IN
+              </span>
+              <div className="font-sans font-black text-2xl md:text-4xl text-white tracking-widest flex items-center gap-0.5 leading-none">
+                <span>{timeUntilMidnight.hours}</span>
+                <span className="animate-[pulse_1s_infinite]">:</span>
+                <span>{timeUntilMidnight.minutes}</span>
+                <span className="animate-[pulse_1s_infinite]">:</span>
+                <span>{timeUntilMidnight.seconds}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 font-mono text-xl md:text-2xl font-black text-[#CE1126] bg-white border-2 border-[#e0e3e4] px-4 py-2 rounded-xl relative z-10 shadow-inner">
-              <span>{timeUntilMidnight.hours}</span>
-              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
-              <span>{timeUntilMidnight.minutes}</span>
-              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
-              <span>{timeUntilMidnight.seconds}</span>
+            <div className="relative z-10 mr-1 shrink-0 md:scale-110">
+              <Timer size={36} className="text-white stroke-[2.2]" />
             </div>
           </div>
 
@@ -447,24 +446,24 @@ export default function App() {
         <main className="flex-1 mt-22 mb-28 flex flex-col items-center justify-start w-full max-w-2xl mx-auto px-4 md:px-6 gap-6 animate-[fadeSlideIn_0.2s_ease-out]">
           
           {/* Lego-style Next LEGODLE Countdown clock on game board */}
-          <div className="bg-[#eceeef] border-4 border-[#e0e3e4] px-5 py-3 rounded-2xl flex items-center justify-between gap-4 w-full max-w-lg shadow-[0_4px_0_rgba(0,0,0,0.06)] relative overflow-hidden select-none">
+          <div className="bg-[#CE1126] px-5 py-3 rounded-2xl flex items-center justify-between gap-4 w-full max-w-lg shadow-[0_4px_0_#9a0c1a] relative overflow-hidden select-none border-b border-[#a10e1e]">
             {/* Stud background layout effect for lego vibe */}
-            <div className="absolute top-[3px] left-[15%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute top-[3px] left-[50%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
-            <div className="absolute top-[3px] left-[85%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[3px] left-[15%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[3px] left-[50%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
+            <div className="absolute top-[3px] left-[85%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
 
             <div className="flex items-center gap-2 relative z-10">
-              <Clock size={16} className="text-[#002B7F] animate-pulse shrink-0" />
-              <span className="font-sans font-black text-xs text-[#191c1d] uppercase">
+              <Timer size={16} className="text-white animate-pulse shrink-0" />
+              <span className="font-sans font-black text-xs text-white uppercase tracking-wider">
                 Next Daily Puzzle in:
               </span>
             </div>
 
-            <div className="flex items-center gap-1 font-mono text-sm md:text-base font-black text-[#CE1126] bg-white border border-[#e0e3e4] px-3 py-1.5 rounded-xl relative z-10 shadow-inner">
+            <div className="flex items-center gap-1 font-mono text-xs md:text-sm font-black text-white bg-white/10 border border-white/20 px-3 py-1 rounded-xl relative z-10 shadow-inner">
               <span>{timeUntilMidnight.hours}</span>
-              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span className="animate-[pulse_1s_infinite] text-white/60">:</span>
               <span>{timeUntilMidnight.minutes}</span>
-              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span className="animate-[pulse_1s_infinite] text-white/60">:</span>
               <span>{timeUntilMidnight.seconds}</span>
             </div>
           </div>
