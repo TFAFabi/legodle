@@ -90,4 +90,4 @@ https://legodle.tipa-hub.com
 
 ## 📄 License
 
-MIT (or your preferred license)
+MIT
