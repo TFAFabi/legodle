@@ -11,16 +11,19 @@ import HelpModal from './components/HelpModal';
 import GuessPiecesGame from './components/GuessPiecesGame';
 
 export default function App() {
-  // Screen views: 'HOME' menu, active 'GAME' board, 'GUESS_PIECES' board, 'TERMS' board, or 'PRIVACY' board
-  const [screen, setScreen] = useState<'HOME' | 'GAME' | 'GUESS_PIECES' | 'TERMS' | 'PRIVACY'>(() => {
+  // Screen views: 'HOME' menu, active 'GAME' board, 'GUESS_PIECES' board, 'TERMS' board, 'PRIVACY' board, or 'ARCHIVE' dashboard
+  const [screen, setScreen] = useState<'HOME' | 'GAME' | 'GUESS_PIECES' | 'TERMS' | 'PRIVACY' | 'ARCHIVE'>(() => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     if (path === '/classic' || hash === '#/classic' || hash === '#classic') return 'GAME';
     if (path === '/pieces' || hash === '#/pieces' || hash === '#pieces') return 'GUESS_PIECES';
     if (path === '/terms' || hash === '#/terms' || hash === '#terms') return 'TERMS';
     if (path === '/privacy' || hash === '#/privacy' || hash === '#privacy') return 'PRIVACY';
+    if (path === '/archive' || hash === '#/archive' || hash === '#archive') return 'ARCHIVE';
     return 'HOME';
   });
+
+  const [archiveDate, setArchiveDate] = useState<Date | null>(null);
 
   // Sync screen state with URL pathname/hash
   useEffect(() => {
@@ -29,6 +32,7 @@ export default function App() {
     else if (screen === 'GUESS_PIECES') targetPath = '/pieces';
     else if (screen === 'TERMS') targetPath = '/terms';
     else if (screen === 'PRIVACY') targetPath = '/privacy';
+    else if (screen === 'ARCHIVE') targetPath = '/archive';
 
     const currentPath = window.location.pathname;
     
@@ -51,14 +55,64 @@ export default function App() {
         setScreen('TERMS');
       } else if (path === '/privacy' || hash === '#/privacy' || hash === '#privacy') {
         setScreen('PRIVACY');
+      } else if (path === '/archive' || hash === '#/archive' || hash === '#archive') {
+        setScreen('ARCHIVE');
       } else {
         setScreen('HOME');
+        setArchiveDate(null);
+        setDailyPuzzle(getDailyPuzzle());
       }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Helper selectors and plays for archive
+  const getArchiveDays = (): Date[] => {
+    const startDate = new Date('2026-06-01T12:00:00'); // secure mid-day to ignore TZ rollovers
+    const endDate = new Date();
+    const days: Date[] = [];
+    const current = new Date(startDate);
+    const limit = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 12, 0, 0);
+
+    while (current <= limit) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    return days.reverse();
+  };
+
+  const getPiecesPuzzleNumber = (date: Date): number => {
+    const epoch = new Date(2026, 5, 1, 0, 0, 0, 0).getTime(); // June 1, 2026 (Month index 5 is June)
+    const today = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime();
+    const dayIndex = Math.max(0, Math.floor((today - epoch) / (1000 * 60 * 60 * 24)));
+    return dayIndex + 1;
+  };
+
+  const playClassicArchive = (date: Date) => {
+    setArchiveDate(date);
+    setDailyPuzzle(getDailyPuzzle(date));
+    setGameMode('DAILY');
+    setScreen('GAME');
+  };
+
+  const playPiecesArchive = (date: Date) => {
+    setArchiveDate(date);
+    setScreen('GUESS_PIECES');
+  };
+
+  const handleBackToHome = () => {
+    setArchiveDate(null);
+    setDailyPuzzle(getDailyPuzzle());
+    setScreen('HOME');
+  };
+
+  const handleLogoClick = () => {
+    setArchiveDate(null);
+    setDailyPuzzle(getDailyPuzzle());
+    setScreen('HOME');
+  };
 
   // Modes: 'DAILY' (one puzzle per day, records stats) or 'PRACTICE' (infinite random training puzzles)
   const [gameMode, setGameMode] = useState<'DAILY' | 'PRACTICE'>('DAILY');
@@ -170,6 +224,8 @@ export default function App() {
 
   // Handle midnight reset timer trigger
   useEffect(() => {
+    if (archiveDate) return; // Do NOT auto-reset or compare when playing an archived game!
+
     // Periodically inspect if current calendar date differs from state loaded date
     const interval = setInterval(() => {
       const fresh = getDailyPuzzle();
@@ -179,7 +235,7 @@ export default function App() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [dailyPuzzle]);
+  }, [dailyPuzzle, archiveDate]);
 
   const activeTargetSet = gameMode === 'DAILY' ? dailyPuzzle.targetSet : practiceSet;
   const activeGuesses = gameMode === 'DAILY' ? dailyGuesses : practiceGuesses;
@@ -293,9 +349,8 @@ export default function App() {
 
         {/* Dynamic LEGODLE logo in blocks with Romanian Flag colors, centered perfectly */}
         <button 
-          onClick={() => setScreen('HOME')}
-          disabled={screen === 'HOME'}
-          className={`flex items-center gap-1 md:gap-1.5 select-none focus:outline-none transition-transform duration-200 ${screen === 'GAME' ? 'hover:scale-105 cursor-pointer' : 'cursor-default'}`} 
+          onClick={handleLogoClick}
+          className="flex items-center gap-1 md:gap-1.5 select-none focus:outline-none transition-transform duration-200 hover:scale-105 cursor-pointer" 
           id="legodle-logo"
         >
           {['L', 'E', 'G', 'O', 'D', 'L', 'E'].map((char, index) => {
@@ -476,6 +531,15 @@ export default function App() {
             </div>
           </div>
 
+          {/* View Archive Button */}
+          <button
+            onClick={() => setScreen('ARCHIVE')}
+            className="w-full max-w-3xl text-center bg-white hover:bg-neutral-50 border-4 border-[#e0e3e4] hover:border-[#002B7F] text-[#191c1d] font-black text-xs uppercase py-3.5 rounded-xl shadow-[0_4px_0_rgba(0,0,0,0.03)] hover:shadow-md transition-all active:translate-y-0.5 flex items-center justify-center gap-2 select-none cursor-pointer"
+          >
+            <Clock size={14} className="text-[#002B7F]" />
+            View Puzzle Archive
+          </button>
+
           {/* Other Projects Section designed beautifully with Lego/Hackclub Vibe */}
           <div className="w-full max-w-3xl mt-6 border-t-4 border-[#e0e3e4] pt-8 flex flex-col items-center">
             <h3 className="font-sans font-black text-2xl md:text-3xl text-[#191c1d] tracking-tight uppercase mb-6 text-center">
@@ -569,7 +633,118 @@ export default function App() {
           </div>
         </main>
       ) : screen === 'GUESS_PIECES' ? (
-        <GuessPiecesGame onBackToHome={() => setScreen('HOME')} />
+        <GuessPiecesGame onBackToHome={handleBackToHome} archiveDate={archiveDate} />
+      ) : screen === 'ARCHIVE' ? (
+        <main className="flex-1 mt-24 mb-24 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-4 md:px-6 py-6 gap-6 animate-[fadeSlideIn_0.3s_ease-out]">
+          
+          {/* Header Title with Clock symbol representing Time/Archive */}
+          <div className="flex items-center justify-center gap-3 mb-1 select-none">
+            <Clock size={28} className="text-[#002B7F] shrink-0" />
+            <h2 className="font-sans font-black text-2xl md:text-3xl text-[#191c1d] tracking-tight uppercase text-center">
+              Daily Puzzle Archive
+            </h2>
+          </div>
+          <p className="text-xs text-neutral-500 font-semibold text-center max-w-md mb-2">
+            Step back in time to play previous daily challenges since June 1st, 2026. Put your memory to the test!
+          </p>
+
+          {/* List of archive dates */}
+          <div className="w-full flex flex-col gap-4">
+            {getArchiveDays().map((dateVal) => {
+              const puzzle = getDailyPuzzle(dateVal);
+              const piecesNum = getPiecesPuzzleNumber(dateVal);
+              
+              // Load historical solved states
+              const classicStatusStr = localStorage.getItem(`legodle_daily_status_${puzzle.dateString}`);
+              const piecesStateStr = localStorage.getItem(`legodle_pieces_daily_state_${piecesNum}`);
+              let piecesStatusStr = null;
+              if (piecesStateStr) {
+                try {
+                  piecesStatusStr = JSON.parse(piecesStateStr).status;
+                } catch(e) {}
+              }
+
+              // Human formatted date: Monday, June 1, 2026
+              const formattedDate = dateVal.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              });
+
+              // Check if it's the actual current daily date
+              const todayDateString = getDailyPuzzle().dateString;
+              const isToday = puzzle.dateString === todayDateString;
+
+              return (
+                <div 
+                  key={puzzle.dateString} 
+                  className={`w-full bg-white border-4 ${
+                    isToday ? 'border-[#CE1126] shadow-[0_4px_12px_rgba(206,17,38,0.08)]' : 'border-[#e0e3e4]'
+                  } p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-sans font-black text-sm text-[#191c1d] uppercase tracking-wide">
+                        {formattedDate}
+                      </span>
+                      {isToday && (
+                        <span className="text-[9px] font-black uppercase text-white bg-[#CE1126] px-1.5 py-0.5 rounded border border-red-200 animate-pulse">
+                          Today
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-neutral-500 font-bold uppercase tracking-wider">
+                      <span>Classic Guess #{puzzle.puzzleNumber}</span>
+                      <span>&bull;</span>
+                      <span>Guess Pieces #{piecesNum}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Play Classic button with state preservation feedback */}
+                    <button
+                      onClick={() => playClassicArchive(dateVal)}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer active:translate-y-0.5 shadow-sm border-b-4 ${
+                        classicStatusStr === 'WON'
+                          ? 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700 text-white'
+                          : classicStatusStr === 'LOST'
+                          ? 'bg-neutral-400 hover:bg-neutral-500 border-neutral-600 text-white'
+                          : 'bg-[#002B7F] hover:bg-[#00205f] border-[#001D57] text-white'
+                      }`}
+                    >
+                      Classic {classicStatusStr === 'WON' ? '🏆' : classicStatusStr === 'LOST' ? '💀' : 'Play'}
+                    </button>
+
+                    {/* Play Guess Pieces button inside archive */}
+                    <button
+                      onClick={() => playPiecesArchive(dateVal)}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer active:translate-y-0.5 shadow-sm border-b-4 ${
+                        piecesStatusStr === 'WON'
+                          ? 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700 text-white'
+                          : piecesStatusStr === 'LOST'
+                          ? 'bg-neutral-400 hover:bg-neutral-500 border-neutral-600 text-white'
+                          : 'bg-[#0e59c3] hover:bg-[#0c4ca5] border-[#003da1] text-white'
+                      }`}
+                    >
+                      Pieces {piecesStatusStr === 'WON' ? '🏆' : piecesStatusStr === 'LOST' ? '💀' : 'Play'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Action Back Button to return home */}
+          <button
+            onClick={handleBackToHome}
+            className="w-full max-w-sm mt-4 bg-[#002B7F] hover:bg-[#00205f] text-white font-black text-xs uppercase py-3.5 rounded-xl border-b-4 border-[#001D57] shadow-md transition-all active:translate-y-0.5 active:border-b-0 flex items-center justify-center gap-2 select-none cursor-pointer"
+          >
+            <ArrowLeft size={14} className="stroke-[2.5]" />
+            Return to Main Menu
+          </button>
+
+        </main>
       ) : screen === 'TERMS' ? (
         <main className="flex-1 mt-24 mb-24 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-4 md:px-6 py-6 gap-6 animate-[fadeSlideIn_0.3s_ease-out]">
           
@@ -706,6 +881,24 @@ export default function App() {
       ) : (
         <main className="flex-1 mt-22 mb-28 flex flex-col items-center justify-start w-full max-w-2xl mx-auto px-4 md:px-6 gap-6 animate-[fadeSlideIn_0.2s_ease-out]">
           
+          {/* Archive Date warning banner */}
+          {archiveDate && (
+            <div className="w-full bg-[#FCD116] border-4 border-[#c7a107] p-3.5 rounded-2xl text-xs font-black uppercase tracking-wider text-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-[fadeSlideIn_0.2s_ease-out]">
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-amber-700 shrink-0" />
+                <span className="font-bold">
+                  Playing Archived Puzzle: {archiveDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+              <button
+                onClick={handleBackToHome}
+                className="bg-neutral-900 hover:bg-neutral-800 text-white font-black text-[10px] uppercase py-1.5 px-3 rounded-lg border-b-2 border-neutral-950 shadow-sm active:translate-y-0.5 cursor-pointer whitespace-nowrap"
+              >
+                Return to Live Day
+              </button>
+            </div>
+          )}
+
           {/* Toggle Mode: Daily vs Practice training selector */}
           <div className="w-full flex justify-center">
             <div className="bg-[#eceeef] p-1 rounded-2xl border-2 border-[#e0e3e4] flex gap-1 relative shadow-inner">

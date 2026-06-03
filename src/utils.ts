@@ -17,10 +17,11 @@ export function getDailyPuzzle(overrideDate?: Date) {
   const totalSets = LEGO_SETS.length;
   const index = Math.abs(hash) % totalSets;
   
-  // Generate a fun puzzle number based on days since a reference epoch (Jan 1, 2026)
-  const epoch = new Date('2026-01-01T00:00:00').getTime();
-  const diffTime = Math.max(0, date.getTime() - epoch);
-  const puzzleNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 42; // Offset starting at #42 just like the mockups
+  // Generate a fun puzzle number based on days since a reference epoch (June 1, 2026)
+  const epoch = new Date(2026, 5, 1, 0, 0, 0, 0).getTime(); // June 1, 2026 (Month is 0-indexed)
+  const todayMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime();
+  const diffTime = Math.max(0, todayMidnight - epoch);
+  const puzzleNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
   return {
     targetSet: LEGO_SETS[index],

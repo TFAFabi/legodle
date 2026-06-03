@@ -1,12 +1,13 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, RefreshCw, Zap, Flame, Info, Sparkles, Check, ChevronUp, ChevronDown, Award, Copy, HelpCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Zap, Flame, Info, Sparkles, Check, ChevronUp, ChevronDown, Award, Copy, HelpCircle, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LegoSet } from '../types';
 import { LEGO_SETS } from '../data';
 
 interface GuessPiecesGameProps {
   onBackToHome: () => void;
+  archiveDate?: Date | null;
 }
 
 interface PieceGuess {
@@ -19,12 +20,12 @@ interface PieceGuess {
 const MAX_ATTEMPTS = 6;
 
 // Deterministic daily puzzle based on date
-function getDailyPiecesSet(): { set: LegoSet; puzzleNumber: number } {
-  const epoch = new Date('2026-01-01').getTime();
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const dayIndex = Math.floor((today - epoch) / (1000 * 60 * 60 * 24));
-  const puzzleNumber = (dayIndex % LEGO_SETS.length) + 1;
+function getDailyPiecesSet(overrideDate?: Date): { set: LegoSet; puzzleNumber: number } {
+  const epoch = new Date(2026, 5, 1, 0, 0, 0, 0).getTime(); // June 1, 2026 (Month is 0-indexed)
+  const date = overrideDate || new Date();
+  const today = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime();
+  const dayIndex = Math.max(0, Math.floor((today - epoch) / (1000 * 60 * 60 * 24)));
+  const puzzleNumber = dayIndex + 1;
   // Use a shifted or distinct indexing so the daily pieces set is different from the daily set!
   const shiftedIndex = (dayIndex + 17) % LEGO_SETS.length;
   return {
@@ -33,7 +34,7 @@ function getDailyPiecesSet(): { set: LegoSet; puzzleNumber: number } {
   };
 }
 
-export default function GuessPiecesGame({ onBackToHome }: GuessPiecesGameProps) {
+export default function GuessPiecesGame({ onBackToHome, archiveDate }: GuessPiecesGameProps) {
   const [gameMode, setGameMode] = useState<'DAILY' | 'PRACTICE'>('DAILY');
   const [targetSet, setTargetSet] = useState<LegoSet>(LEGO_SETS[0]);
   const [puzzleNumber, setPuzzleNumber] = useState(1);
@@ -45,7 +46,7 @@ export default function GuessPiecesGame({ onBackToHome }: GuessPiecesGameProps) 
   // Initialize daily or practice target set
   useEffect(() => {
     if (gameMode === 'DAILY') {
-      const { set, puzzleNumber: pNum } = getDailyPiecesSet();
+      const { set, puzzleNumber: pNum } = getDailyPiecesSet(archiveDate || undefined);
       setTargetSet(set);
       setPuzzleNumber(pNum);
 
@@ -68,7 +69,7 @@ export default function GuessPiecesGame({ onBackToHome }: GuessPiecesGameProps) 
       resetPracticeSet();
     }
     setInputValue('');
-  }, [gameMode]);
+  }, [gameMode, archiveDate]);
 
   const resetPracticeSet = () => {
     const randomSet = LEGO_SETS[Math.floor(Math.random() * LEGO_SETS.length)];
@@ -209,6 +210,24 @@ export default function GuessPiecesGame({ onBackToHome }: GuessPiecesGameProps) 
           Guess the Pieces
         </span>
       </div>
+
+      {/* Archive Date warning banner */}
+      {archiveDate && (
+        <div className="w-full bg-[#FCD116] border-4 border-[#c7a107] p-3.5 rounded-2xl text-xs font-black uppercase tracking-wider text-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-[fadeSlideIn_0.2s_ease-out]">
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-amber-700 shrink-0" />
+            <span className="font-bold">
+              Playing Archived Puzzle: {archiveDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
+          <button
+            onClick={onBackToHome}
+            className="bg-neutral-900 hover:bg-neutral-800 text-white font-black text-[10px] uppercase py-1.5 px-3 rounded-lg border-b-2 border-neutral-950 shadow-sm active:translate-y-0.5 cursor-pointer whitespace-nowrap"
+          >
+            Return to Live Day
+          </button>
+        </div>
+      )}
 
       {/* Mode selectors */}
       <div className="bg-[#eceeef] p-1 rounded-2xl border-2 border-[#e0e3e4] flex gap-1 relative shadow-inner">
