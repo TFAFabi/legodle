@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, BarChart3, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle } from 'lucide-react';
+import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LegoSet, GuessFeedback, GameState, PlayerStats } from './types';
 import { LEGO_SETS } from './data';
@@ -8,7 +8,8 @@ import AutocompleteSearch from './components/AutocompleteSearch';
 import GuessRow, { EmptyRow } from './components/GuessRow';
 import MysterySetReveal from './components/MysterySetReveal';
 import HelpModal from './components/HelpModal';
-import StatsModal from './components/StatsModal';
+import TermsModal from './components/TermsModal';
+import PrivacyModal from './components/PrivacyModal';
 
 export default function App() {
   // Screen views: 'HOME' menu or active 'GAME' board
@@ -37,7 +38,39 @@ export default function App() {
   });
   const [helpOpen, setHelpOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [showHint, setShowHint] = useState(false);
+
+  // Next LEGODLE midnight countdown state and effect
+  const [timeUntilMidnight, setTimeUntilMidnight] = useState({
+    hours: '00',
+    minutes: '00',
+    seconds: '00'
+  });
+
+  useEffect(() => {
+    function updateTimer() {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // Next 00:00 midnight
+      const diffMs = Math.max(0, midnight.getTime() - now.getTime());
+      
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      
+      setTimeUntilMidnight({
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0')
+      });
+    }
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Load stats and check initial tutorial visit on mount
   useEffect(() => {
@@ -184,8 +217,6 @@ export default function App() {
       if (nextStatus !== 'PLAYING') {
         const freshStats = recordFinishedGame(stats, nextStatus === 'WON', updatedGuesses.length, dateKey);
         setStats(freshStats);
-        // Open statistics modal after slight dramatic delay
-        setTimeout(() => setStatsOpen(true), 1800);
       }
     } else {
       setPracticeGuesses(updatedGuesses);
@@ -258,15 +289,17 @@ export default function App() {
           })}
         </button>
 
-        {/* Right side stats icon aligned right */}
+        {/* Right side Fabi's Portfolio link aligned right */}
         <div className="flex items-center justify-end w-20 md:w-28">
-          <button
-            onClick={() => setStatsOpen(true)}
-            className="p-2 aspect-square rounded-xl text-[#bb0026] hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer active:translate-y-0.5"
-            title="View Statistics"
+          <a
+            href="https://fabian.tipa-hub.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 aspect-square rounded-xl text-[#002B7F] hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer active:translate-y-0.5"
+            title="Fabi's Portfolio"
           >
-            <BarChart3 size={22} className="stroke-[2.5]" />
-          </button>
+            <Globe size={22} className="stroke-[2.5]" />
+          </a>
         </div>
       </header>
 
@@ -307,6 +340,38 @@ export default function App() {
             <p className="text-sm md:text-base text-neutral-500 font-semibold leading-relaxed">
               Solve daily brick puzzles, verify interactive attributes, and prove your master builder memory.
             </p>
+          </div>
+
+          {/* Beautiful Lego-style Next LEGODLE Countdown clock */}
+          <div className="bg-[#eceeef] border-4 border-[#e0e3e4] px-6 py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 w-full max-w-md shadow-[0_4px_0_rgba(0,0,0,0.06)] relative overflow-hidden select-none">
+            {/* Stud background layout effect for lego vibe */}
+            <div className="absolute top-[3px] left-[15%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[3px] left-[50%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[3px] left-[85%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute bottom-[3px] left-[30%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute bottom-[3px] left-[70%] w-2 h-2 rounded-full bg-neutral-300/30"></div>
+
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-[#002B7F] border-b-4 border-[#001c54] flex items-center justify-center text-white shadow-sm">
+                <Clock size={20} className="animate-pulse" />
+              </div>
+              <div className="text-left">
+                <span className="text-[10px] font-black tracking-widest uppercase block text-[#002B7F] mb-0.5">
+                  Daily puzzle release
+                </span>
+                <span className="font-sans font-black text-sm text-[#191c1d] uppercase">
+                  Next LEGODLE Brick
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 font-mono text-xl md:text-2xl font-black text-[#CE1126] bg-white border-2 border-[#e0e3e4] px-4 py-2 rounded-xl relative z-10 shadow-inner">
+              <span>{timeUntilMidnight.hours}</span>
+              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span>{timeUntilMidnight.minutes}</span>
+              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span>{timeUntilMidnight.seconds}</span>
+            </div>
           </div>
 
           {/* Three Mode Cards Hierarchy */}
@@ -381,6 +446,29 @@ export default function App() {
       ) : (
         <main className="flex-1 mt-22 mb-28 flex flex-col items-center justify-start w-full max-w-2xl mx-auto px-4 md:px-6 gap-6 animate-[fadeSlideIn_0.2s_ease-out]">
           
+          {/* Lego-style Next LEGODLE Countdown clock on game board */}
+          <div className="bg-[#eceeef] border-4 border-[#e0e3e4] px-5 py-3 rounded-2xl flex items-center justify-between gap-4 w-full max-w-lg shadow-[0_4px_0_rgba(0,0,0,0.06)] relative overflow-hidden select-none">
+            {/* Stud background layout effect for lego vibe */}
+            <div className="absolute top-[3px] left-[15%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[3px] left-[50%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
+            <div className="absolute top-[3px] left-[85%] w-1.5 h-1.5 rounded-full bg-neutral-300/30"></div>
+
+            <div className="flex items-center gap-2 relative z-10">
+              <Clock size={16} className="text-[#002B7F] animate-pulse shrink-0" />
+              <span className="font-sans font-black text-xs text-[#191c1d] uppercase">
+                Next Daily Puzzle in:
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 font-mono text-sm md:text-base font-black text-[#CE1126] bg-white border border-[#e0e3e4] px-3 py-1.5 rounded-xl relative z-10 shadow-inner">
+              <span>{timeUntilMidnight.hours}</span>
+              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span>{timeUntilMidnight.minutes}</span>
+              <span className="animate-[pulse_1s_infinite] text-[#FCD116]">:</span>
+              <span>{timeUntilMidnight.seconds}</span>
+            </div>
+          </div>
+
           {/* Toggle Mode: Daily vs Practice training selector */}
           <div className="w-full flex justify-center">
             <div className="bg-[#eceeef] p-1 rounded-2xl border-2 border-[#e0e3e4] flex gap-1 relative shadow-inner">
@@ -514,28 +602,41 @@ export default function App() {
       )}
 
       {/* FOOTER METADATA */}
-      <footer className="fixed bottom-0 left-0 w-full z-30 bg-white border-t-4 border-[#e0e3e4] h-16 flex flex-col items-center justify-center shadow-[0_-4px_8px_rgba(0,0,0,0.03)] pb-safe px-4 select-none">
-        <p className="text-xs font-black text-neutral-400 uppercase tracking-wider text-center">
-          LEGODLE &copy; 2026. All rights reserved. Created by Fabi.
+      <footer className="w-full bg-white border-t-4 border-[#e0e3e4] py-6 flex flex-col items-center justify-center gap-3 shadow-[0_-4px_8px_rgba(0,0,0,0.03)] px-4 mt-auto select-none">
+        <p className="text-xs font-black text-neutral-450 uppercase tracking-wider text-center">
+          LEGODLE &copy; 2026. All rights reserved. Created by <a href="https://fabian.tipa-hub.com/" target="_blank" rel="noopener noreferrer" className="text-[#002B7F] hover:underline hover:text-[#CE1126] transition-colors">Fabi</a>.
         </p>
+        <div className="flex items-center gap-4 text-xs font-black uppercase tracking-wider text-neutral-400">
+          <button
+            onClick={() => setTermsOpen(true)}
+            className="hover:text-[#002B7F] cursor-pointer transition-colors focus:outline-none"
+          >
+            Terms &amp; Conditions
+          </button>
+          <span className="text-neutral-300 select-none">&bull;</span>
+          <button
+            onClick={() => setPrivacyOpen(true)}
+            className="hover:text-[#CE1126] cursor-pointer transition-colors focus:outline-none"
+          >
+            Privacy Policy
+          </button>
+        </div>
       </footer>
 
-      {/* MODAL POPUPS FOR TUTORIALS AND METRICS */}
+      {/* MODAL POPUPS FOR TUTORIALS AND POLICIES */}
       <HelpModal
         isOpen={helpOpen}
         onClose={() => setHelpOpen(false)}
       />
 
-      <StatsModal
-        isOpen={statsOpen}
-        onClose={() => setStatsOpen(false)}
-        stats={stats}
-        onShare={activeStatus !== 'PLAYING' ? () => {
-          setStatsOpen(false);
-          // Auto scrolls window downwards on reveal trigger
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        } : undefined}
-        shareDisabled={activeStatus === 'PLAYING'}
+      <TermsModal
+        isOpen={termsOpen}
+        onClose={() => setTermsOpen(false)}
+      />
+
+      <PrivacyModal
+        isOpen={privacyOpen}
+        onClose={() => setPrivacyOpen(false)}
       />
     </div>
   );
