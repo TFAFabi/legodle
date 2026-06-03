@@ -1,0 +1,6 @@
+{
+  "name": "LEGOdle",
+  "description": "A daily LEGO set guessing game inspired by Wordle.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
