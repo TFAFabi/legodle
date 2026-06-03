@@ -1,20 +1,93 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# LEGOdle
 
-# Run and deploy your AI Studio app
+🧱 LEGOdle is a daily LEGO set guessing game inspired by Wordle.
 
-This contains everything you need to run your app locally.
+Play it here: https://legodle.tipa-hub.com
 
-View your app in AI Studio: https://ai.studio/apps/b46bce53-c0d2-48cd-86b7-44e99c0cfc2f
+---
 
-## Run Locally
+## 🎮 About the game
 
-**Prerequisites:**  Node.js
+In LEGOdle, your goal is to guess the hidden LEGO set of the day.
 
+Each guess gives you clues based on real LEGO set properties such as:
+- Release year
+- Piece count
+- Theme
+- Number of minifigures
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Use the feedback to narrow down your guesses and find the correct set in as few attempts as possible.
+
+---
+
+## 🧠 How it works
+
+- Every day, a new LEGO set is selected as the “daily puzzle”
+- All players get the same set for that day
+- Each guess is compared against the target set
+- The game gives directional hints (higher/lower/correct) for numerical values and exact matches for categories
+- Your stats (streak, wins, average guesses) are saved locally in your browser
+
+---
+
+## 🧱 Features
+
+- Daily LEGO set challenges
+- Autocomplete search for LEGO sets
+- Wordle-style feedback system
+- Streak tracking and statistics
+- Shareable result grid
+- Mobile-friendly UI with LEGO-inspired design
+
+---
+
+## 📦 Data source
+
+LEGOdle uses the LEGO set dataset from Rebrickable:
+https://rebrickable.com/downloads/
+
+This includes:
+- Set names
+- Year of release
+- Theme information
+- Piece counts
+- Minifigure counts (where available)
+
+---
+
+## 🚀 Tech stack
+
+- React + TypeScript
+- Client-side game logic
+- Static dataset (no backend required for MVP)
+- Local storage for stats and progress
+
+---
+
+## ⚠️ Disclaimer
+
+LEGOdle is an unofficial fan project and is not affiliated with or endorsed by the LEGO Group.
+
+All LEGO trademarks and set data belong to their respective owners.
+
+---
+
+## 🌐 Live demo
+
+https://legodle.tipa-hub.com
+
+---
+
+## 🧩 Future ideas
+
+- Hard mode (fewer hints)
+- Theme-specific puzzles (Star Wars, Technic, etc.)
+- Global leaderboard
+- Image-based hints
+- Multiplayer races
+
+---
+
+## 📄 License
+
+MIT (or your preferred license)
