@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock, Timer, ExternalLink } from 'lucide-react';
+import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock, Timer, ExternalLink, Scale, ShieldCheck, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LegoSet, GuessFeedback, GameState, PlayerStats } from './types';
 import { LEGO_SETS } from './data';
@@ -8,13 +8,57 @@ import AutocompleteSearch from './components/AutocompleteSearch';
 import GuessRow, { EmptyRow } from './components/GuessRow';
 import MysterySetReveal from './components/MysterySetReveal';
 import HelpModal from './components/HelpModal';
-import TermsModal from './components/TermsModal';
-import PrivacyModal from './components/PrivacyModal';
 import GuessPiecesGame from './components/GuessPiecesGame';
 
 export default function App() {
-  // Screen views: 'HOME' menu, active 'GAME' board, or 'GUESS_PIECES' board
-  const [screen, setScreen] = useState<'HOME' | 'GAME' | 'GUESS_PIECES'>('HOME');
+  // Screen views: 'HOME' menu, active 'GAME' board, 'GUESS_PIECES' board, 'TERMS' board, or 'PRIVACY' board
+  const [screen, setScreen] = useState<'HOME' | 'GAME' | 'GUESS_PIECES' | 'TERMS' | 'PRIVACY'>(() => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    if (path === '/classic' || hash === '#/classic' || hash === '#classic') return 'GAME';
+    if (path === '/pieces' || hash === '#/pieces' || hash === '#pieces') return 'GUESS_PIECES';
+    if (path === '/terms' || hash === '#/terms' || hash === '#terms') return 'TERMS';
+    if (path === '/privacy' || hash === '#/privacy' || hash === '#privacy') return 'PRIVACY';
+    return 'HOME';
+  });
+
+  // Sync screen state with URL pathname/hash
+  useEffect(() => {
+    let targetPath = '/';
+    if (screen === 'GAME') targetPath = '/classic';
+    else if (screen === 'GUESS_PIECES') targetPath = '/pieces';
+    else if (screen === 'TERMS') targetPath = '/terms';
+    else if (screen === 'PRIVACY') targetPath = '/privacy';
+
+    const currentPath = window.location.pathname;
+    
+    // Switch route in navigation history seamlessly
+    if (currentPath !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [screen]);
+
+  // Listen for popstate events (e.g., user clicks browser's back or forward button)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+      if (path === '/classic' || hash === '#/classic' || hash === '#classic') {
+        setScreen('GAME');
+      } else if (path === '/pieces' || hash === '#/pieces' || hash === '#pieces') {
+        setScreen('GUESS_PIECES');
+      } else if (path === '/terms' || hash === '#/terms' || hash === '#terms') {
+        setScreen('TERMS');
+      } else if (path === '/privacy' || hash === '#/privacy' || hash === '#privacy') {
+        setScreen('PRIVACY');
+      } else {
+        setScreen('HOME');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Modes: 'DAILY' (one puzzle per day, records stats) or 'PRACTICE' (infinite random training puzzles)
   const [gameMode, setGameMode] = useState<'DAILY' | 'PRACTICE'>('DAILY');
@@ -39,8 +83,6 @@ export default function App() {
   });
   const [helpOpen, setHelpOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
-  const [termsOpen, setTermsOpen] = useState(false);
-  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [showHint, setShowHint] = useState(false);
 
   // Next LEGODLE midnight countdown state and effect
@@ -528,6 +570,139 @@ export default function App() {
         </main>
       ) : screen === 'GUESS_PIECES' ? (
         <GuessPiecesGame onBackToHome={() => setScreen('HOME')} />
+      ) : screen === 'TERMS' ? (
+        <main className="flex-1 mt-24 mb-24 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-4 md:px-6 py-6 gap-6 animate-[fadeSlideIn_0.3s_ease-out]">
+          
+          {/* Header Title with Scale symbol representing Legal/Terms */}
+          <div className="flex items-center justify-center gap-3 mb-2 select-none">
+            <Scale size={28} className="text-[#002B7F] shrink-0" />
+            <h2 className="font-sans font-black text-2xl md:text-3xl text-[#191c1d] tracking-tight uppercase text-center">
+              Terms &amp; Conditions
+            </h2>
+          </div>
+
+          {/* Core Terms Card content */}
+          <div className="w-full bg-white border-4 border-[#e0e3e4] p-6 md:p-10 rounded-2xl shadow-[0_4px_0_rgba(0,0,0,0.03)] font-sans text-sm text-neutral-600 leading-relaxed space-y-5">
+            <p className="font-bold text-neutral-800 text-base">
+              Welcome to LEGODLE!
+            </p>
+            <p>
+              Please read these Terms and Conditions carefully before playing. By using or accessing LEGODLE, you agree to be bound by these terms. If you do not agree, please do not use the website.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              1. Intellectual Property &amp; Trademarks
+            </h3>
+            <p>
+              LEGO is a trademark of the LEGO Group of companies. LEGODLE is an unofficial fan-made puzzle trivia application built for educational and entertainment purposes only. We do not represent, hold affiliation with, nor are we sponsored by the LEGO Group of companies. No trademark infringement is intended.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              2. Permitted Use &amp; Clues
+            </h3>
+            <p>
+              You are permitted to play the trivia game, share your results/blocks on social media (such as Reddit or Discord), and explore different modes of the website. Automation, scrapers, or malicious payload submission are strictly prohibited.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              3. Accuracy of Trivia Sets
+            </h3>
+            <p>
+              All set sizes, minifigure counts, years, and historical descriptions are based on public catalogues. While we strive to maintain accurate dimensions and brick data, occasional catalog mismatches might happen.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              4. Revisions to the Game
+            </h3>
+            <p>
+              LEGODLE is crafted by <b>Fabi</b>. We reserve the right to modify, restrict, reset statistics, or sunset game modes at any time without continuous direct notice to players.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              5. Limitation of Liability
+            </h3>
+            <p>
+              This website is provided on an "as-is" basis. Fabi or LEGODLE makes no warranties regarding uninterrupted puzzle service, network security, or uptime guarantees. Play playfully and have fun!
+            </p>
+
+            <div className="pt-6 border-t border-neutral-200 text-center text-xs text-neutral-400 font-bold uppercase tracking-widest select-none">
+              Last Updated &bull; June 2026
+            </div>
+          </div>
+
+          {/* Action Back Button */}
+          <button
+            onClick={() => setScreen('HOME')}
+            className="w-full max-w-sm bg-[#002B7F] hover:bg-[#00205f] text-white font-black text-xs uppercase py-3.5 rounded-xl border-b-4 border-[#001D57] shadow-md transition-all active:translate-y-0.5 active:border-b-0 flex items-center justify-center gap-2 select-none cursor-pointer animate-pulse hover:animate-none"
+          >
+            <ArrowLeft size={14} className="stroke-[2.5]" />
+            Return to Main Menu
+          </button>
+
+        </main>
+      ) : screen === 'PRIVACY' ? (
+        <main className="flex-1 mt-24 mb-24 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-4 md:px-6 py-6 gap-6 animate-[fadeSlideIn_0.3s_ease-out]">
+          
+          {/* Header Title with Shield check representing Privacy safety */}
+          <div className="flex items-center justify-center gap-3 mb-2 select-none">
+            <ShieldCheck size={28} className="text-[#CE1126] shrink-0" />
+            <h2 className="font-sans font-black text-2xl md:text-3xl text-[#191c1d] tracking-tight uppercase text-center">
+              Privacy Policy
+            </h2>
+          </div>
+
+          {/* Core Privacy Card content */}
+          <div className="w-full bg-white border-4 border-[#e0e3e4] p-6 md:p-10 rounded-2xl shadow-[0_4px_0_rgba(0,0,0,0.03)] font-sans text-sm text-neutral-600 leading-relaxed space-y-5">
+            <p className="font-bold text-neutral-800 text-base">
+              Your Privacy Matters to Us!
+            </p>
+            <p>
+              LEGODLE is a simple, lightweight fan-made word/brick puzzle game. We focus on fair play, fun, and keeping our users happy without tracking them.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              1. No Personal Account Registration
+            </h3>
+            <p>
+              You do not need to enter an email address, password, or set up any credentials to play. The application is free and fast, accessible immediately to everyone.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              2. Local Storage Statistics
+            </h3>
+            <p>
+              To keep track of your daily streaks, guess rates, wins, and layout settings, we store simple, anonymized variables directly inside your browser's <b>localStorage</b>. None of this data is transmitted to an external server or shared with third parties.
+            </p>
+
+            <h3 className="font-black text-[#191c1d] uppercase tracking-wider text-xs pt-2">
+              3. No Cookies or Trackers (Zero Tracking)
+            </h3>
+            <p>
+              We do not use advertising cookies or behavior-tracking pixels. Fabi designed LEGODLE with strict respect for user data, allowing you to enjoy pure, clean puzzle fun with zero commercial telemetry.
+            </p>
+
+            <h3 className="font-black text-neutral-800 uppercase tracking-wider text-xs pt-2">
+              4. External Website Resource Safety
+            </h3>
+            <p>
+              If you click on external resources or social sharing links (such as Reddit or Discord), those separate systems operate under their own independent privacy agreements.
+            </p>
+
+            <div className="pt-6 border-t border-neutral-200 text-center text-xs text-neutral-400 font-bold uppercase tracking-widest select-none">
+              Last Updated &bull; June 2026
+            </div>
+          </div>
+
+          {/* Action Back Button */}
+          <button
+            onClick={() => setScreen('HOME')}
+            className="w-full max-w-sm bg-[#CE1126] hover:bg-[#a10d1d] text-white font-black text-xs uppercase py-3.5 rounded-xl border-b-4 border-[#780a15] shadow-md transition-all active:translate-y-0.5 active:border-b-0 flex items-center justify-center gap-2 select-none cursor-pointer animate-pulse hover:animate-none"
+          >
+            <ArrowLeft size={14} className="stroke-[2.5]" />
+            Return to Main Menu
+          </button>
+
+        </main>
       ) : (
         <main className="flex-1 mt-22 mb-28 flex flex-col items-center justify-start w-full max-w-2xl mx-auto px-4 md:px-6 gap-6 animate-[fadeSlideIn_0.2s_ease-out]">
           
@@ -670,15 +845,15 @@ export default function App() {
         </p>
         <div className="flex items-center gap-4 text-xs font-black uppercase tracking-wider text-neutral-400">
           <button
-            onClick={() => setTermsOpen(true)}
-            className="hover:text-[#002B7F] cursor-pointer transition-colors focus:outline-none"
+            onClick={() => setScreen('TERMS')}
+            className={`hover:text-[#002B7F] cursor-pointer transition-colors focus:outline-none ${screen === 'TERMS' ? 'text-[#002B7F]' : ''}`}
           >
             Terms &amp; Conditions
           </button>
           <span className="text-neutral-300 select-none">&bull;</span>
           <button
-            onClick={() => setPrivacyOpen(true)}
-            className="hover:text-[#CE1126] cursor-pointer transition-colors focus:outline-none"
+            onClick={() => setScreen('PRIVACY')}
+            className={`hover:text-[#CE1126] cursor-pointer transition-colors focus:outline-none ${screen === 'PRIVACY' ? 'text-[#CE1126]' : ''}`}
           >
             Privacy Policy
           </button>
@@ -689,16 +864,6 @@ export default function App() {
       <HelpModal
         isOpen={helpOpen}
         onClose={() => setHelpOpen(false)}
-      />
-
-      <TermsModal
-        isOpen={termsOpen}
-        onClose={() => setTermsOpen(false)}
-      />
-
-      <PrivacyModal
-        isOpen={privacyOpen}
-        onClose={() => setPrivacyOpen(false)}
       />
     </div>
   );
