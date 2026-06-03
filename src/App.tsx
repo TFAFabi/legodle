@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock, Timer } from 'lucide-react';
+import { HelpCircle, RefreshCw, Award, Info, Sparkles, Lightbulb, Zap, Home, Play, Lock, Puzzle, Globe, Clock, Timer, ExternalLink } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LegoSet, GuessFeedback, GameState, PlayerStats } from './types';
 import { LEGO_SETS } from './data';
@@ -10,10 +10,11 @@ import MysterySetReveal from './components/MysterySetReveal';
 import HelpModal from './components/HelpModal';
 import TermsModal from './components/TermsModal';
 import PrivacyModal from './components/PrivacyModal';
+import GuessPiecesGame from './components/GuessPiecesGame';
 
 export default function App() {
-  // Screen views: 'HOME' menu or active 'GAME' board
-  const [screen, setScreen] = useState<'HOME' | 'GAME'>('HOME');
+  // Screen views: 'HOME' menu, active 'GAME' board, or 'GUESS_PIECES' board
+  const [screen, setScreen] = useState<'HOME' | 'GAME' | 'GUESS_PIECES'>('HOME');
 
   // Modes: 'DAILY' (one puzzle per day, records stats) or 'PRACTICE' (infinite random training puzzles)
   const [gameMode, setGameMode] = useState<'DAILY' | 'PRACTICE'>('DAILY');
@@ -239,15 +240,6 @@ export default function App() {
       <header className="fixed top-0 left-0 w-full z-40 flex justify-between items-center px-4 md:px-8 h-18 bg-white border-b-4 border-[#e0e3e4] shadow-[0_4px_0_rgba(0,0,0,0.06)]">
         {/* Left actions aligned left */}
         <div className="flex items-center gap-1 w-20 md:w-28">
-          {screen === 'GAME' && (
-            <button
-              onClick={() => setScreen('HOME')}
-              className="p-2 aspect-square rounded-xl text-[#002B7F] hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer active:translate-y-0.5"
-              title="Return to Menu"
-            >
-              <Home size={22} className="stroke-[2.5]" />
-            </button>
-          )}
           <button
             onClick={() => setHelpOpen(true)}
             className="p-2 aspect-square rounded-xl text-[#bb0026] hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer active:translate-y-0.5"
@@ -397,27 +389,27 @@ export default function App() {
               </div>
             </button>
 
-            {/* Mode 2: Guess the Pieces (LOCKED COMING SOON) */}
-            <div className="bg-[#eceeeef0] border-4 border-[#e5e7eb] p-6 rounded-2xl relative flex flex-col justify-between select-none opacity-80 shadow-inner">
-              <span className="absolute top-4 right-4 bg-amber-500 border border-amber-600 text-white text-[9px] font-black tracking-widest uppercase px-2 py-1 rounded-[6px] shadow-sm">
-                Coming Soon
-              </span>
+            {/* Mode 2: Guess the Pieces */}
+            <button
+              onClick={() => setScreen('GUESS_PIECES')}
+              className="text-left bg-white border-4 border-[#e0e3e4] hover:border-[#0e59c3] hover:-translate-y-1 p-6 rounded-2xl transition-all cursor-pointer flex flex-col justify-between group shadow-sm hover:shadow-md select-none focus:outline-none"
+            >
               <div>
-                <div className="w-12 h-12 rounded-xl bg-neutral-300 flex items-center justify-center text-neutral-500 mb-5 border-b-4 border-neutral-450 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-[#0e59c3] flex items-center justify-center text-white mb-5 border-b-4 border-[#003da1] shadow-sm">
                   <Puzzle size={22} className="stroke-[2.5]" />
                 </div>
-                <h3 className="font-sans font-black text-lg text-neutral-500 uppercase tracking-wide mb-2">
+                <h3 className="font-sans font-black text-lg text-[#191c1d] uppercase tracking-wide group-hover:text-[#0e59c3] transition-colors mb-2">
                   Guess Pieces
                 </h3>
-                <p className="text-xs text-neutral-400 font-semibold leading-relaxed">
+                <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
                   Identify exact part details, custom components, and color configurations of a selected model.
                 </p>
               </div>
-              <div className="mt-6 flex items-center gap-1.5 text-xs font-black uppercase text-neutral-500">
-                <Lock size={12} className="stroke-[2.5]" />
-                Locked
+              <div className="mt-6 flex items-center gap-1.5 text-xs font-black uppercase text-[#0e59c3] group-hover:text-[#bb0026] transition-colors">
+                Play Now
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></div>
               </div>
-            </div>
+            </button>
 
             {/* Mode 3: Surprise Mode (LOCKED COMING SOON) */}
             <div className="bg-[#eceeeef0] border-4 border-[#e5e7eb] p-6 rounded-2xl relative flex flex-col justify-between select-none opacity-80 shadow-inner">
@@ -441,33 +433,104 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* Other Projects Section designed beautifully with Lego/Hackclub Vibe */}
+          <div className="w-full max-w-3xl mt-6 border-t-4 border-[#e0e3e4] pt-8 flex flex-col items-center">
+            <h3 className="font-sans font-black text-2xl md:text-3xl text-[#191c1d] tracking-tight uppercase mb-6 text-center">
+              Some more projects you might enjoy
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-6">
+              {/* Card 1: FTC Games */}
+              <a
+                href="https://ftc-games.tipa-hub.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-left bg-white border-4 border-[#e0e3e4] hover:border-[#0e59c3] hover:-translate-y-1 p-6 rounded-2xl transition-all flex flex-col justify-between group shadow-sm hover:shadow-md select-none outline-none"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-[#0e59c3] flex items-center justify-center text-white mb-5 border-b-4 border-[#003da1] shadow-sm">
+                    <Puzzle size={22} className="stroke-[2.5]" />
+                  </div>
+                  <h3 className="font-sans font-black text-lg text-[#191c1d] uppercase tracking-wide group-hover:text-[#0e59c3] transition-colors mb-2">
+                    FTC Games
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
+                    A gamified STEM learning platform built for a robotics team and their community. FTC: Daily Word Games.
+                  </p>
+                </div>
+                <div className="mt-6 flex items-center gap-1.5 text-xs font-black uppercase text-[#0e59c3] group-hover:text-[#bb0026] transition-colors">
+                  Check Out
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#0e59c3] animate-ping"></div>
+                </div>
+              </a>
+
+              {/* Card 2: eID Reader */}
+              <a
+                href="https://play.google.com/store/apps/details?id=com.TFAStudios.eidreadermobile&pcampaignid=web_share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-left bg-white border-4 border-[#e0e3e4] hover:border-[#CE1126] hover:-translate-y-1 p-6 rounded-2xl transition-all flex flex-col justify-between group shadow-sm hover:shadow-md select-none outline-none"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-[#CE1126] flex items-center justify-center text-white mb-5 border-b-4 border-[#9a0c1a] shadow-sm">
+                    <Globe size={22} className="stroke-[2.5]" />
+                  </div>
+                  <h3 className="font-sans font-black text-lg text-[#191c1d] uppercase tracking-wide group-hover:text-[#CE1126] transition-colors mb-2">
+                    eID Reader
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
+                    A standards-compliant Android app that reads eIDs and ePassports via NFC, no hardware needed.
+                  </p>
+                </div>
+                <div className="mt-6 flex items-center gap-1.5 text-xs font-black uppercase text-[#CE1126] group-hover:text-[#bb0026] transition-colors">
+                  Check Out
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#CE1126] animate-ping"></div>
+                </div>
+              </a>
+
+              {/* Card 3: Mind Metric */}
+              <a
+                href="https://mind-metric.tipa-hub.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-left bg-white border-4 border-[#e0e3e4] hover:border-[#FCD116] hover:-translate-y-1 p-6 rounded-2xl transition-all flex flex-col justify-between group shadow-sm hover:shadow-md select-none outline-none"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-[#FCD116] flex items-center justify-center text-neutral-900 mb-5 border-b-4 border-[#c7a107] shadow-sm">
+                    <Sparkles size={22} className="stroke-[2.5]" />
+                  </div>
+                  <h3 className="font-sans font-black text-lg text-[#191c1d] uppercase tracking-wide group-hover:text-amber-500 transition-colors mb-2">
+                    Mind Metric
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
+                    A psychometric personality test that profiles your social style and emotional patterns.
+                  </p>
+                </div>
+                <div className="mt-6 flex items-center gap-1.5 text-xs font-black uppercase text-amber-500 group-hover:text-[#bb0026] transition-colors font-extrabold">
+                  Check Out
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></div>
+                </div>
+              </a>
+            </div>
+
+            {/* View More Full-Width Button */}
+            <a
+              href="https://fabian.tipa-hub.com/projects"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full text-center bg-neutral-900 hover:bg-neutral-850 border-b-4 border-neutral-950 text-white font-black text-xs uppercase py-3.5 rounded-xl shadow-md transition-all active:translate-y-0.5 active:border-b-0 flex items-center justify-center gap-2 select-none cursor-pointer"
+            >
+              View More
+              <ExternalLink size={14} />
+            </a>
+          </div>
         </main>
+      ) : screen === 'GUESS_PIECES' ? (
+        <GuessPiecesGame onBackToHome={() => setScreen('HOME')} />
       ) : (
         <main className="flex-1 mt-22 mb-28 flex flex-col items-center justify-start w-full max-w-2xl mx-auto px-4 md:px-6 gap-6 animate-[fadeSlideIn_0.2s_ease-out]">
           
-          {/* Lego-style Next LEGODLE Countdown clock on game board */}
-          <div className="bg-[#CE1126] px-5 py-3 rounded-2xl flex items-center justify-between gap-4 w-full max-w-lg shadow-[0_4px_0_#9a0c1a] relative overflow-hidden select-none border-b border-[#a10e1e]">
-            {/* Stud background layout effect for lego vibe */}
-            <div className="absolute top-[3px] left-[15%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
-            <div className="absolute top-[3px] left-[50%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
-            <div className="absolute top-[3px] left-[85%] w-1.5 h-1.5 rounded-full bg-white/5"></div>
-
-            <div className="flex items-center gap-2 relative z-10">
-              <Timer size={16} className="text-white animate-pulse shrink-0" />
-              <span className="font-sans font-black text-xs text-white uppercase tracking-wider">
-                Next Daily Puzzle in:
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1 font-mono text-xs md:text-sm font-black text-white bg-white/10 border border-white/20 px-3 py-1 rounded-xl relative z-10 shadow-inner">
-              <span>{timeUntilMidnight.hours}</span>
-              <span className="animate-[pulse_1s_infinite] text-white/60">:</span>
-              <span>{timeUntilMidnight.minutes}</span>
-              <span className="animate-[pulse_1s_infinite] text-white/60">:</span>
-              <span>{timeUntilMidnight.seconds}</span>
-            </div>
-          </div>
-
           {/* Toggle Mode: Daily vs Practice training selector */}
           <div className="w-full flex justify-center">
             <div className="bg-[#eceeef] p-1 rounded-2xl border-2 border-[#e0e3e4] flex gap-1 relative shadow-inner">

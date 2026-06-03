@@ -1,6 +1,6 @@
 {
   "name": "LEGOdle",
-  "description": "A daily LEGO set guessing game inspired by Wordle.",
+  "description": "A daily LEGO set & piece-count game inspired by Wordle. Crafted lovingly by Fabian with Hack Club.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
